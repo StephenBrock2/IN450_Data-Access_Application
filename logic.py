@@ -6,17 +6,13 @@ class Logic():
         self.user = ''
         self.password = ''
 
+    #Validates login credentials by opening database connection 
     def login_check(self, user, password):
         self.user = user
         self.password = password
 
-        try:
-            login = psycopg.connect(f'dbname=IN450DB user={self.user} password={self.password}')
-            login.close()
-            login = "Login Success"
-        except:
-            login = "Login Error"
-        return login
+        login = psycopg.connect(f'dbname=IN450DB user={self.user} password={self.password}')
+        login.close()
 
     #Query the database to retrieve rowcount from table
     def row_count(self, tbl):
