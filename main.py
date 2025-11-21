@@ -57,6 +57,7 @@ class Application():
         def log_out():
             root.withdraw()
             login.deiconify()
+            output_win.delete('1.0', END)
             user_entry.delete(0, END)
             password_entry.delete(0, END)
 
