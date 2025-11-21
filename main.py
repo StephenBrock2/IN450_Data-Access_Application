@@ -1,7 +1,6 @@
 import logic
 from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk, messagebox, Menu
 import tkinter.font as tkfont
 
 # Application Layer
@@ -10,9 +9,8 @@ class Application():
     def __init__(self, logic: logic.Logic):
         self.logic = logic
 
-        root = Tk()
-        root.title('PostgreSQL Data Access Application')
-        root.geometry('500x400')
+        server_list = ['', 'PostgreSQL']
+        db_list = ['', 'IN450DB']
 
         #Button command to display rowcount query or permission error
         def rowcount_btn(output, tbl):
@@ -37,23 +35,39 @@ class Application():
 
         #Login credential fetch from enty
         def login_fetch():
+            server = selected_server.get()
+            db = selected_db.get()
             user = user_entry.get()
             password = password_entry.get()
-            return user, password
+            return server, db, user, password
         
         #Checks credentials against the database and returns an error if incorrect
         def log_in():
-            user, password = login_fetch()
+            server, db, user, password = login_fetch()
             try:
-                print(logic.login_check(user, password))
-                login.destroy()
+                logic.login_check(server, db, user, password)
+                login.withdraw()
                 root.deiconify()
             except:
-                messagebox.showinfo("Login Error", "Incorrect username or password.")
+                messagebox.showinfo(f"Database {db} Login Error", "Incorrect username or password.")
                 user_entry.delete(0, END)
                 password_entry.delete(0, END)
 
+        #Drops main window and returns login window
+        def log_out():
+            root.withdraw()
+            login.deiconify()
+            user_entry.delete(0, END)
+            password_entry.delete(0, END)
+
     #Root Window
+        root = Tk()
+        root.title('PostgreSQL Data Access Application')
+        root.geometry('500x500')
+
+        style = ttk.Style()
+        style.configure('TMenubutton', background='white')
+
         lbl = ttk.Label(root, text= 'Data Access Commands', justify= 'left')
 
         # Button Frame
@@ -73,6 +87,9 @@ class Application():
         win_font = tkfont.Font(family='Arial', size=10)
         output_win.configure(font=win_font)
 
+        exit_frame = Frame(root)
+        out_btn = ttk.Button(exit_frame, text= 'Log Off', width= 15, command= lambda: log_out())
+        exit_btn = ttk.Button(exit_frame, text= 'Exit', width= 15, command= lambda: root.destroy())
 
         lbl.pack(padx=10, pady=10, anchor= 'w')
         btn_frame.pack(pady=10)
@@ -83,28 +100,43 @@ class Application():
         win_frame.pack(fill=X, pady=10)
         scroll_y.pack(side= RIGHT, fill= Y)
         output_win.pack()
+        exit_frame.pack()
+        out_btn.grid(column=1, row=1)
+        exit_btn.grid(column=2, row=1)
 
     #Login Window
         login = Toplevel()
-        login.geometry('500x120')
+        login.geometry('500x175')
         log_lbl = ttk.Label(login, text= 'Data Access Login', justify= 'center')
 
         # Entry Frame
         entry_frame = Frame(login)
+        server_lbl = ttk.Label(entry_frame, text= 'Server')
+        selected_server = StringVar()
+        server_select = ttk.OptionMenu(entry_frame, selected_server, *server_list)
+        server_select.config(width=15)
+        selected_db = StringVar()
+        db_lbl = ttk.Label(entry_frame, text= 'Database')
+        db_select = ttk.OptionMenu(entry_frame, selected_db, *db_list)
+        db_select.config(width=15)
         user_lbl = ttk.Label(entry_frame, text= 'Username')
         user_entry = Entry(entry_frame)
         password_lbl = ttk.Label(entry_frame, text= 'Password')
-        password_entry = Entry(entry_frame)
+        password_entry = Entry(entry_frame, show='*')
 
         log_btn1 = ttk.Button(login, text= 'Log In', width= 15, command=lambda: log_in())
         log_btn2 = ttk.Button(login, text= 'Exit', width= 15, command=lambda: root.destroy())
 
         log_lbl.pack()
         entry_frame.pack()
-        user_lbl.grid(column=1, row=1)
-        user_entry.grid(column=2, row=1)
-        password_lbl.grid(column=1, row=2)
-        password_entry.grid(column=2, row=2)
+        server_lbl.grid(column=1, row=1, padx=5)
+        server_select.grid(column=2, row=1, pady=2)
+        db_lbl.grid(column=1, row=2, padx=5)
+        db_select.grid(column=2, row=2, pady=2)
+        user_lbl.grid(column=1, row=3, padx=5)
+        user_entry.grid(column=2, row=3)
+        password_lbl.grid(column=1, row=4, padx=5)
+        password_entry.grid(column=2, row=4)
         log_btn1.pack(pady=5)
         log_btn2.pack()
 
