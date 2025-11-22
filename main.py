@@ -1,6 +1,6 @@
 import logic
 from tkinter import *
-from tkinter import ttk, messagebox, Menu
+from tkinter import ttk, messagebox
 import tkinter.font as tkfont
 
 # Application Layer
@@ -53,10 +53,12 @@ class Application():
                 user_entry.delete(0, END)
                 password_entry.delete(0, END)
 
-        #Drops main window and returns login window
+        #Drops main window and returns login window / Clears entry fields
         def log_out():
             root.withdraw()
             login.deiconify()
+            selected_server.set('')
+            selected_db.set('')
             output_win.delete('1.0', END)
             user_entry.delete(0, END)
             password_entry.delete(0, END)
@@ -81,7 +83,6 @@ class Application():
 
         # Output Frame
         win_frame = Frame(root)
-        
         scroll_y = ttk.Scrollbar(win_frame, orient= 'vertical')
         output_win = Text(win_frame, height=20, width=50, padx=5, pady=5, yscrollcommand= scroll_y.set)
         scroll_y.config(command= output_win.yview)
