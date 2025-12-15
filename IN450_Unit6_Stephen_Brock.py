@@ -12,6 +12,7 @@ class DressingRoom:
 
         self.time = 0
         self.wait_time = 0
+        self.room_time = 0
         self.item_count = 0
     
     def releaseRoom(self, count, time):
@@ -34,6 +35,7 @@ class DressingRoom:
                 time.sleep(0.05)
                 self.time += duration
                 room_time += duration
+                self.room_time += room_time
         wait_time = end_time - start_time
         self.wait_time += wait_time
         self.releaseRoom(count, room_time)
@@ -55,6 +57,7 @@ class Scenario:
             t.join()
 
         avg_time = int(self.dressing_room.wait_time/self.customer_count)
+        avg_use = int(self.dressing_room.room_time/self.customer_count)
         avg_items = int(self.dressing_room.item_count/self.customer_count)
 
         print()
@@ -62,5 +65,6 @@ class Scenario:
         print(f'Total time to service all customers: {self.dressing_room.time} minutes')
         print(f'Average customer wait time: {avg_time} minutes')
         print(f'Average number of items per customer: {avg_items} items')
+        print(f'Average room use time: {avg_use} minutes')
 
 scen1 = Scenario()
