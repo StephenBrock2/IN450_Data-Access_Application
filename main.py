@@ -9,9 +9,6 @@ class Application():
     def __init__(self, logic: logic.Logic):
         self.logic = logic
 
-        server_list = ['', 'PostgreSQL']
-        db_list = ['', 'IN450DB']
-
         #Button command to display rowcount query or permission error
         def rowcount_btn(output, tbl):
             output.delete('1.0', END)
@@ -37,8 +34,7 @@ class Application():
         def login_fetch():
             server = selected_server.get()
             db = selected_db.get()
-            user = user_entry.get()
-            password = password_entry.get()
+            user, password = logic.login_encrypt(user_entry.get(), password_entry.get())
             return server, db, user, password
         
         #Checks credentials against the database and returns an error if incorrect
@@ -115,11 +111,11 @@ class Application():
         entry_frame = Frame(login)
         server_lbl = ttk.Label(entry_frame, text= 'Server')
         selected_server = StringVar()
-        server_select = ttk.OptionMenu(entry_frame, selected_server, *server_list)
+        server_select = ttk.OptionMenu(entry_frame, selected_server, *logic.server_list)
         server_select.config(width=15)
         selected_db = StringVar()
         db_lbl = ttk.Label(entry_frame, text= 'Database')
-        db_select = ttk.OptionMenu(entry_frame, selected_db, *db_list)
+        db_select = ttk.OptionMenu(entry_frame, selected_db, *logic.db_list)
         db_select.config(width=15)
         user_lbl = ttk.Label(entry_frame, text= 'Username')
         user_entry = Entry(entry_frame)
