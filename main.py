@@ -2,6 +2,10 @@ import logic
 from tkinter import *
 from tkinter import ttk, messagebox
 import tkinter.font as tkfont
+import re
+import logging as lg
+
+lg.basicConfig(filename='authsec.log', level=lg.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Application Layer
 class Application():
@@ -35,6 +39,8 @@ class Application():
             server = selected_server.get()
             db = selected_db.get()
             user, password = logic.login_encrypt(user_entry.get(), password_entry.get())
+            user_entry.delete(0, END)
+            password_entry.delete(0, END)
             return server, db, user, password
         
         #Checks credentials against the database and returns an error if incorrect
@@ -42,12 +48,13 @@ class Application():
             server, db, user, password = login_fetch()
             try:
                 logic.login_check(server, db, user, password)
+                lg.info(f'Successful login attempt: user={logic.cred_decrypt(user)}, server={server}, db={db}')
                 login.withdraw()
                 root.deiconify()
-            except:
-                messagebox.showinfo(f"Database {db} Login Error", "Incorrect username or password.")
-                user_entry.delete(0, END)
-                password_entry.delete(0, END)
+            except Exception as e:
+                lg.warning(f'Failed login attempt: user={logic.cred_decrypt(user)}, server={server}, db={db}')
+                messagebox.showinfo(f"Login Error", "Incorrect username or password.")
+
 
         #Drops main window and returns login window / Clears entry fields
         def log_out():
@@ -58,6 +65,12 @@ class Application():
             output_win.delete('1.0', END)
             user_entry.delete(0, END)
             password_entry.delete(0, END)
+        
+        #Input validation to restrict available characters in usernames and passwords
+        def validate_input(value):
+            if value == '':
+                return True
+            return bool(re.match(r'^[A-Za-z0-9]+$', value))
 
     #Root Window
         root = Tk()
@@ -72,9 +85,9 @@ class Application():
         # Button Frame
         btn_frame = Frame(root)
 
-        btn1 = ttk.Button(btn_frame, text= 'Get Rows A', width= 15, command=lambda: rowcount_btn(output_win, 'in450a'))
+        btn1 = ttk.Button(btn_frame, text= 'Get Rows A', width= 15, command=lambda: rowcount_btn(output_win, 0))
         btn2 = ttk.Button(btn_frame, text= 'Name List', width= 15, command=lambda: namelist_btn(output_win))
-        btn3 = ttk.Button(btn_frame, text= 'Get Rows C', width= 15, command=lambda: rowcount_btn(output_win, 'in450c'))
+        btn3 = ttk.Button(btn_frame, text= 'Get Rows C', width= 15, command=lambda: rowcount_btn(output_win, 2))
         btn4 = ttk.Button(btn_frame, text= 'Clear', width= 15, command=lambda: output_win.delete('1.0', END))
 
         # Output Frame
@@ -118,9 +131,10 @@ class Application():
         db_select = ttk.OptionMenu(entry_frame, selected_db, *logic.db_list)
         db_select.config(width=15)
         user_lbl = ttk.Label(entry_frame, text= 'Username')
-        user_entry = Entry(entry_frame)
+        vcmd_entry = (login.register(validate_input), '%P')
+        user_entry = Entry(entry_frame, validate='key', validatecommand=vcmd_entry)
         password_lbl = ttk.Label(entry_frame, text= 'Password')
-        password_entry = Entry(entry_frame, show='*')
+        password_entry = Entry(entry_frame, show='*', validate='key', validatecommand=vcmd_entry)
 
         log_btn1 = ttk.Button(login, text= 'Log In', width= 15, command=lambda: log_in())
         log_btn2 = ttk.Button(login, text= 'Exit', width= 15, command=lambda: root.destroy())
